@@ -78,7 +78,6 @@ def main():
         netD.train()
         # train loop
         for batch, (real_image, noisy_image) in enumerate(train_bar):
-            break
             # move to GPU
             real_image = real_image.to(device)
             noisy_image = noisy_image.to(device)
@@ -137,10 +136,10 @@ def main():
                 ssims = [pytorch_ssim.ssim(ground_images[0], denoised_images[i]).item() for i in range(6)]
                 # move tensors back to CPU
                 ground_images = [image.cpu() for image in ground_images]
-                denoised_images = [image.cpu() for image in ground_images]
+                denoised_images = [image.cpu() for image in denoised_images]
                 # generate imaging to output/images
                 filename = filename[0] # filename return from loader is a tuple
-                png_name = filename[:-len(filename.split('.')[-1])-1] + '.png' # jpg not supported by torchvision
+                png_name = filename[:-len(filename.split('.')[-1])-1] + '.png' # jpg is not supported by torchvision
                 print(ground_images[0].shape)
                 save_validation_images(os.path.join(output_path, 'images', 'epoch_%d_%s' % (epoch, png_name)), ground_images, denoised_images, psnrs, ssims)
                 # append result
