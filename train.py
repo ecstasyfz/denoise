@@ -20,7 +20,7 @@ from utils import *
 
 def main():
     # hyper parameters
-    BATCH_SIZE = 3
+    BATCH_SIZE = 8
     NUM_EPOCHS = 100
     NUM_WORKERS = 4
     CROP_SIZE = 64
@@ -78,6 +78,7 @@ def main():
         netD.train()
         # train loop
         for batch, (real_image, noisy_image) in enumerate(train_bar):
+            break
             # move to GPU
             real_image = real_image.to(device)
             noisy_image = noisy_image.to(device)
@@ -114,8 +115,6 @@ def main():
             train_bar.set_description(
                 desc='[Train %d/%d] | G_loss: %.4f | D_loss: %.4f | D(fake): %.4f | D(real): %.4f' % (
                     epoch, NUM_EPOCHS, G_loss, D_loss, fake_out, real_out))
-            # clean cuda tensors
-            del fake_out
 
         # stop grad for validation
         with torch.no_grad():
@@ -126,7 +125,7 @@ def main():
             netD.eval()
             # validation loop
             for filename, images in val_bar:
-                # move to GPU
+                # move tensors to GPU
                 ground_images = images.to(device).squeeze(0)
                 # excess the network
                 denoised_images = netG(ground_images)
@@ -136,9 +135,13 @@ def main():
                 # measure
                 psnrs = [10*log10(1/((denoised_images[i]-ground_images[0])**2).mean()) for i in range(6)]
                 ssims = [pytorch_ssim.ssim(ground_images[0], denoised_images[i]).item() for i in range(6)]
+                # move tensors back to CPU
+                ground_images = [image.cpu() for image in ground_images]
+                denoised_images = [image.cpu() for image in ground_images]
                 # generate imaging to output/images
                 filename = filename[0] # filename return from loader is a tuple
                 png_name = filename[:-len(filename.split('.')[-1])-1] + '.png' # jpg not supported by torchvision
+                print(ground_images[0].shape)
                 save_validation_images(os.path.join(output_path, 'images', 'epoch_%d_%s' % (epoch, png_name)), ground_images, denoised_images, psnrs, ssims)
                 # append result
                 for i in range(6):
@@ -148,9 +151,6 @@ def main():
                 val_bar.set_description(
                     desc='[Validation for sigma=20 %d/%d] | PSNR: %.4f | SSIM: %.4f' % (
                         epoch, NUM_EPOCHS, psnrs[2], ssims[2]))
-                # clean cuda tensors
-                del ground_images
-                del denoised_images
 
 
         # save part

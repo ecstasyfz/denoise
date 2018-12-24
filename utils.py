@@ -67,8 +67,8 @@ class ValDatasetFromFolder(Dataset):
 def save_validation_images(filename, ground_images, denoised_images, psnrs, ssims):
     layers = []
     for i in range(6):
-        ground_image = transforms.ToPILImage()(ground_images[i].cpu().squeeze(0))
-        denoised_image = transforms.ToPILImage()(denoised_images[i].cpu().squeeze(0))
+        ground_image = transforms.ToPILImage()(ground_images[i].squeeze(0))
+        denoised_image = transforms.ToPILImage()(denoised_images[i].squeeze(0))
         ground_image = transforms.Resize(400)(ground_image)
         denoised_image = transforms.Resize(400)(denoised_image)
         layer = Image.new('RGB', (400, 895), color='white')
