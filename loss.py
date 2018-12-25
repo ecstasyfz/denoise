@@ -46,4 +46,4 @@ class DiscriminatorLoss(nn.Module):
         super(DiscriminatorLoss, self).__init__()
 
     def forward(self, fake_out, real_out):
-        return 1 - (torch.log(real_out) + torch.log(1 - fake_out))
+        return - torch.log(real_out) - torch.log(1 - fake_out)

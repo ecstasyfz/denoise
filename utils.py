@@ -5,7 +5,7 @@ import torch
 from torch.utils.data.dataset import Dataset
 from torchvision import transforms, utils
 
-font = ImageFont.truetype('NotoSansMono.ttf', 35)
+font = ImageFont.truetype('NotoSansMono.ttf', 18)
 
 
 def mkdir(path):
@@ -67,21 +67,45 @@ class ValDatasetFromFolder(Dataset):
 def save_validation_images(filename, ground_images, denoised_images, psnrs, ssims):
     layers = []
     for i in range(6):
-        ground_image = transforms.ToPILImage()(ground_images[i].squeeze(0))
-        denoised_image = transforms.ToPILImage()(denoised_images[i].squeeze(0))
-        ground_image = transforms.Resize(400)(ground_image)
-        denoised_image = transforms.Resize(400)(denoised_image)
-        layer = Image.new('RGB', (400, 895), color='white')
+        ground_image = transforms.ToPILImage()(ground_images[i].squeeze(0).cpu())
+        denoised_image = transforms.ToPILImage()(denoised_images[i].squeeze(0).cpu())
+        ground_image = transforms.Resize(200)(ground_image)
+        denoised_image = transforms.Resize(200)(denoised_image)
+        layer = Image.new('RGB', (200, 455), color='white')
         layer.paste(ground_image, (0, 0))
-        layer.paste(denoised_image, (0, 405))
+        layer.paste(denoised_image, (0, 203))
         draw = ImageDraw.Draw(layer)
-        draw.rectangle((0, 400, 400, 405), fill='black')
-        draw.rectangle((0, 805, 400, 810), fill='black')
+        draw.rectangle((0, 200, 200, 203), fill='black')
+        draw.rectangle((0, 403, 200, 406), fill='black')
         draw.text(
-            xy=(90, 805),
+            xy=(40, 405),
             text='PSNR %.4f\nSSIM %.4f' % (psnrs[i], ssims[i]),
             fill='black',
             font=font)
         layers.append(transforms.ToTensor()(layer))
     layers = torch.stack(layers)
-    utils.save_image(layers, filename, nrow=3, padding=5)
+    im = utils.make_grid(layers, nrow=3, padding=3)
+    im = transforms.ToPILImage()(im)
+    im.save(filename)
+
+# def save_validation_images(filename, ground_images, denoised_images, psnrs, ssims):
+#     layers = []
+#     for i in range(6):
+#         ground_image = transforms.ToPILImage()(ground_images[i].squeeze(0))
+#         denoised_image = transforms.ToPILImage()(denoised_images[i].squeeze(0))
+#         ground_image = transforms.Resize(400)(ground_image)
+#         denoised_image = transforms.Resize(400)(denoised_image)
+#         layer = Image.new('RGB', (400, 895), color='white')
+#         layer.paste(ground_image, (0, 0))
+#         layer.paste(denoised_image, (0, 405))
+#         draw = ImageDraw.Draw(layer)
+#         draw.rectangle((0, 400, 400, 405), fill='black')
+#         draw.rectangle((0, 805, 400, 810), fill='black')
+#         draw.text(
+#             xy=(90, 805),
+#             text='PSNR %.4f\nSSIM %.4f' % (psnrs[i], ssims[i]),
+#             fill='black',
+#             font=font)
+#         layers.append(transforms.ToTensor()(layer))
+#     layers = torch.stack(layers)
+#     utils.save_image(layers, filename, nrow=3, padding=5)

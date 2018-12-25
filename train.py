@@ -67,7 +67,7 @@ def main():
 
     # main loop
     print('Starting Training Loop...')
-    for epoch in range(NUM_EPOCHS):
+    for epoch in range(1, NUM_EPOCHS + 1):
         # create empty epoch results
         train_result = []
         val_result = []
@@ -133,14 +133,13 @@ def main():
                 denoised_images = denoised_images.chunk(6)
                 # measure
                 psnrs = [10*log10(1/((denoised_images[i]-ground_images[0])**2).mean()) for i in range(6)]
-                ssims = [pytorch_ssim.ssim(ground_images[0], denoised_images[i]).item() for i in range(6)]
-                # move tensors back to CPU
-                ground_images = [image.cpu() for image in ground_images]
-                denoised_images = [image.cpu() for image in denoised_images]
+                ssims = [pytorch_ssim.ssim(ground_images[0], denoised_images[i]).item() * 100 for i in range(6)]
+                # # move tensors back to CPU
+                # ground_images = [image.cpu() for image in ground_images]
+                # denoised_images = [image.cpu() for image in denoised_images]
                 # generate imaging to output/images
-                filename = filename[0] # filename return from loader is a tuple
-                png_name = filename[:-len(filename.split('.')[-1])-1] + '.png' # jpg is not supported by torchvision
-                print(ground_images[0].shape)
+                filename = filename[0]  # filename return from loader is a tuple
+                png_name = filename[:-len(filename.split('.')[-1])-1] + '.jpg'
                 save_validation_images(os.path.join(output_path, 'images', 'epoch_%d_%s' % (epoch, png_name)), ground_images, denoised_images, psnrs, ssims)
                 # append result
                 for i in range(6):
@@ -150,7 +149,6 @@ def main():
                 val_bar.set_description(
                     desc='[Validation for sigma=20 %d/%d] | PSNR: %.4f | SSIM: %.4f' % (
                         epoch, NUM_EPOCHS, psnrs[2], ssims[2]))
-
 
         # save part
         # save model parameters
