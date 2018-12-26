@@ -82,9 +82,8 @@ def main():
             real_image = real_image.to(device)
             noisy_image = noisy_image.to(device)
             # update D network
-            netD.zero_grad()
-
             fake_image = netG(noisy_image)
+            netD.zero_grad()
             fake_out = netD(fake_image).mean()
             real_out = netD(real_image).mean()
 
