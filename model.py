@@ -65,7 +65,7 @@ class Generator(nn.Module):
         x7 = self.block7(x6)
         x8 = self.block8(x7)
 
-        x8 = x7 + x8
+        x8 = x7 + x1
         x9 = self.block9(x8) + x
         return (x9+1)/2
 
